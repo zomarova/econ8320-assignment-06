@@ -1,25 +1,61 @@
-name: GitHub Classroom Workflow
-
-on:
-  - push
-  - workflow_dispatch
-
+name: Autograding Tests
+'on':
+- workflow_dispatch
+- repository_dispatch
+- push
 permissions:
   checks: write
   actions: read
   contents: read
-
 jobs:
-  build:
-    name: Autograding
+  run-autograding-tests:
     runs-on: ubuntu-latest
     if: github.actor != 'github-classroom[bot]'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.9'
-      - run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - uses: education/autograding@v1
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Test DataFrame
+      id: test-dataframe
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Test DataFrame
+        setup-command: ''
+        command: python -m unittest tests/testDataFrame.py
+        timeout: 1
+        max-score: 1
+    - name: Test Time Columns
+      id: test-time-columns
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Test Time Columns
+        setup-command: ''
+        command: python -m unittest tests/testTimeColumns.py
+        timeout: 1
+        max-score: 1
+    - name: Test Bright
+      id: test-bright
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Test Bright
+        setup-command: ''
+        command: python -m unittest tests/testBright.py
+        timeout: 1
+        max-score: 1
+    - name: Test Steamy
+      id: test-steamy
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Test Steamy
+        setup-command: ''
+        command: python -m unittest tests/testSteamy.py
+        timeout: 1
+        max-score: 1
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        TEST-DATAFRAME_RESULTS: "${{steps.test-dataframe.outputs.result}}"
+        TEST-TIME-COLUMNS_RESULTS: "${{steps.test-time-columns.outputs.result}}"
+        TEST-BRIGHT_RESULTS: "${{steps.test-bright.outputs.result}}"
+        TEST-STEAMY_RESULTS: "${{steps.test-steamy.outputs.result}}"
+      with:
+        runners: test-dataframe,test-time-columns,test-bright,test-steamy
