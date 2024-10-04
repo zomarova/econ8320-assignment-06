@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     if: github.actor != 'github-classroom[bot]'
     steps:
+    - name: Install Dependencies
+      run: pip install -r requirements.txt
     - name: Checkout code
       uses: actions/checkout@v4
     - name: Test DataFrame
